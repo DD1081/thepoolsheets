@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="THEPOOLsheets">
+<meta name="theme-color" content="#17120b">
+<title>THEPOOLsheets</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><img src="logo-word.png" alt="THE POOL"><span>sheets</span></div>
+  <nav class="tabs">
+    <button class="tab active" data-tab="songs">Songs</button>
+    <button class="tab" data-tab="setlists">Setlists</button>
+  </nav>
+  <button class="icon-btn" id="btnSettings" aria-label="Einstellungen">⚙︎</button>
+</header>
+
+<div id="installHint" class="install-hint" hidden>
+  Für Offline-Betrieb und Vollbild: in Safari auf <b>Teilen</b> tippen und <b>„Zum Home-Bildschirm“</b> wählen, dann die App von dort starten.
+  <button class="link" id="btnHideHint">Ausblenden</button>
+</div>
+
+<main>
+  <!-- SONGS -->
+  <section id="view-songs" class="view active">
+    <div class="toolbar">
+      <input type="search" id="songSearch" placeholder="Song suchen …" autocomplete="off">
+      <label class="btn primary">
+        + Leadsheets
+        <input type="file" id="fileInput" multiple accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/*" hidden>
+      </label>
+    </div>
+    <ul id="songList" class="list"></ul>
+    <p id="songsEmpty" class="empty" hidden><img class="hero-logo" src="logo-full.png" alt="THE POOL – Fine Handmade Rockmusic"><br>Noch keine Songs. Tippe auf „+ Leadsheets“, um PDF-, Word- oder Bilddateien hinzuzufügen – du kannst mehrere auf einmal auswählen.</p>
+  </section>
+
+  <!-- SETLISTS -->
+  <section id="view-setlists" class="view">
+    <div class="toolbar">
+      <span class="toolbar-title">Deine Setlists</span>
+      <button class="btn primary" id="btnNewSetlist">+ Neue Setlist</button>
+    </div>
+    <ul id="setlistList" class="list"></ul>
+    <p id="setlistsEmpty" class="empty" hidden>Noch keine Setlists angelegt.</p>
+  </section>
+
+  <!-- SETLIST DETAIL -->
+  <section id="view-setlist" class="view">
+    <div class="toolbar">
+      <button class="btn ghost" id="btnBackSetlists">‹ Setlists</button>
+      <input type="text" id="setlistName" class="title-input" placeholder="Name der Setlist">
+      <button class="btn primary big" id="btnPlaySetlist">▶ Starten</button>
+    </div>
+    <div class="toolbar sub">
+      <input type="date" id="setlistDate">
+      <span id="setlistCount" class="muted"></span>
+      <span class="spacer"></span>
+      <button class="btn" id="btnAddSongs">+ Songs hinzufügen</button>
+      <button class="btn" id="btnSetlistMore">⋯</button>
+    </div>
+    <ul id="setlistSongs" class="list sortable"></ul>
+    <p id="setlistSongsEmpty" class="empty" hidden>Diese Setlist ist leer. Füge über „+ Songs hinzufügen“ Songs hinzu und ziehe sie am Griff ≡ in die richtige Reihenfolge.</p>
+  </section>
+</main>
+
+<!-- VIEWER -->
+<div id="viewer" class="viewer" hidden>
+  <div id="stage" class="stage"></div>
+  <div id="pageBadge" class="page-badge"></div>
+  <div id="overlay" class="overlay" hidden>
+    <div class="ov-top">
+      <button class="ov-btn" id="vClose">✕ Schließen</button>
+      <div class="ov-title">
+        <div id="vTitle"></div>
+        <div id="vMeta" class="muted"></div>
+      </div>
+      <button class="ov-btn" id="vList">☰ Liste</button>
+    </div>
+    <div id="vNotes" class="ov-notes" hidden></div>
+    <div class="ov-bottom">
+      <button class="ov-btn" id="vPrev">‹ Zurück</button>
+      <button class="ov-btn toggle" id="vFit">Ansicht: Seite</button>
+      <button class="ov-btn toggle" id="vNight">Nachtmodus</button>
+      <div id="vNext" class="ov-next muted"></div>
+      <button class="ov-btn" id="vNextBtn">Weiter ›</button>
+    </div>
+  </div>
+  <div id="jumpList" class="jump" hidden>
+    <div class="jump-head"><b>Springen zu …</b><button class="ov-btn" id="vJumpClose">✕</button></div>
+    <ol id="jumpItems"></ol>
+  </div>
+</div>
+
+<!-- DIALOGS -->
+<dialog id="dlgSong">
+  <form method="dialog" class="dlg">
+    <h2>Song bearbeiten</h2>
+    <label>Titel <input name="title" required></label>
+    <div class="row">
+      <label>Tonart <input name="key" placeholder="z. B. Am"></label>
+      <label>Tempo (BPM) <input name="bpm" inputmode="numeric" placeholder="z. B. 120"></label>
+    </div>
+    <label>Notiz <textarea name="notes" rows="3" placeholder="z. B. Intro 4 Takte, Capo 2 …"></textarea></label>
+    <p class="muted" id="dlgSongFile"></p>
+    <div class="row wrap">
+      <label class="btn">Datei ersetzen
+        <input type="file" id="replaceInput" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/*" hidden>
+      </label>
+      <button type="button" class="btn danger" id="btnDeleteSong">Song löschen</button>
+    </div>
+    <div class="dlg-actions">
+      <button value="cancel" class="btn ghost" formnovalidate>Abbrechen</button>
+      <button value="ok" class="btn primary">Speichern</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgPicker">
+  <div class="dlg picker">
+    <h2>Songs hinzufügen</h2>
+    <input type="search" id="pickerSearch" placeholder="Suchen …" autocomplete="off">
+    <ul id="pickerList" class="list compact"></ul>
+    <div class="dlg-actions">
+      <button class="btn primary" id="btnPickerDone">Fertig</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="dlgSetlistMore">
+  <div class="dlg">
+    <h2>Setlist</h2>
+    <div class="stack">
+      <button class="btn" id="btnDupSetlist">Duplizieren</button>
+      <button class="btn danger" id="btnDelSetlist">Setlist löschen</button>
+      <button class="btn ghost" id="btnMoreClose">Schließen</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="dlgSettings">
+  <div class="dlg">
+    <h2>Einstellungen &amp; Backup</h2>
+    <p class="muted" id="storageInfo"></p>
+    <p>Die Leadsheets liegen nur auf diesem iPad. Erstelle regelmäßig ein Backup und speichere es z. B. in iCloud Drive. Mit derselben Datei überträgst du deine Bibliothek auch auf ein anderes Gerät.</p>
+    <div class="stack">
+      <button class="btn primary" id="btnExport">Backup exportieren</button>
+      <label class="btn">Backup importieren
+        <input type="file" id="importInput" accept=".json,application/json" hidden>
+      </label>
+    </div>
+    <h3>Bühnenansicht</h3>
+    <p class="muted">Rechts tippen = weiter, links tippen = zurück, Mitte = Menü. Wischen funktioniert auch. Bluetooth-Fußpedale (Pfeiltasten / Bild auf/ab) werden unterstützt. Das Display bleibt an, solange die Bühnenansicht offen ist.</p>
+    <p class="muted" id="appVersion"></p>
+    <div class="dlg-actions">
+      <button class="btn ghost" id="btnSettingsClose">Schließen</button>
+    </div>
+  </div>
+</dialog>
+
+<div id="toast" class="toast" hidden></div>
+<div id="busy" class="busy" hidden><div class="spinner"></div><div id="busyText">Wird verarbeitet …</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.7/Sortable.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.13.0/mammoth.browser.min.js" crossorigin="anonymous"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>
